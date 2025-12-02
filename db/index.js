@@ -1,6 +1,7 @@
 const fileDB = require('./file');
 const recordUtils = require('./record');
 const vaultEvents = require('../events');
+const backup = require('./backup');
 
 function addRecord({ name, value }) {
   recordUtils.validateRecord({ name, value });
@@ -9,6 +10,13 @@ function addRecord({ name, value }) {
   data.push(newRecord);
   fileDB.writeDB(data);
   vaultEvents.emit('recordAdded', newRecord);
+
+  // Create automatic backup
+  const backupResult = backup.createBackup(data);
+  if (backupResult.success) {
+    console.log(`💾 Backup created: ${backupResult.filename}`);
+  }
+
   return newRecord;
 }
 
@@ -34,6 +42,13 @@ function deleteRecord(id) {
   data = data.filter(r => r.id !== id);
   fileDB.writeDB(data);
   vaultEvents.emit('recordDeleted', record);
+
+  // Create automatic backup
+  const backupResult = backup.createBackup(data);
+  if (backupResult.success) {
+    console.log(`💾 Backup created: ${backupResult.filename}`);
+  }
+
   return record;
 }
 

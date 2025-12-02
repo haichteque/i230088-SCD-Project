@@ -16,4 +16,13 @@ function writeDB(data) {
   fs.writeFileSync(dbFile, JSON.stringify(data, null, 2));
 }
 
-module.exports = { readDB, writeDB };
+function getFileStats() {
+  try {
+    const stats = fs.statSync(dbFile);
+    return stats;
+  } catch (error) {
+    return null;
+  }
+}
+
+module.exports = { readDB, writeDB, getFileStats, dbFile };

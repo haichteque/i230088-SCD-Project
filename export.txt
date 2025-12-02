@@ -1,0 +1,14 @@
+=====================================
+       NODEVAULT DATA EXPORT
+=====================================
+Export Date: 12/02/2025, 10:04:28 PM
+Total Records: 2
+File: export.txt
+=====================================
+
+RECORDS:
+
+1. ID: 1764682586416 | Name: Huzaifa | Value: 3
+2. ID: 1764683186336 | Name: Zuhair | Value: Engineer
+
+=====================================
