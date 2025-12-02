@@ -1,8 +1,8 @@
 const { MongoClient } = require('mongodb');
 
-// Hardcoded connection string
-const uri = 'mongodb://localhost:27017';
-const dbName = 'nodevault';
+// Connection string from environment variables
+const uri = process.env.MONGO_URI;
+const dbName = process.env.DB_NAME;
 
 let client = null;
 let db = null;
