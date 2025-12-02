@@ -37,4 +37,13 @@ function deleteRecord(id) {
   return record;
 }
 
-module.exports = { addRecord, listRecords, updateRecord, deleteRecord };
+function searchRecords(query) {
+  const data = fileDB.readDB();
+  const lowerQuery = query.toLowerCase();
+  return data.filter(r =>
+    r.name.toLowerCase().includes(lowerQuery) ||
+    r.id.toString() === query
+  );
+}
+
+module.exports = { addRecord, listRecords, updateRecord, deleteRecord, searchRecords };
