@@ -1,18 +1,25 @@
-const fileDB = require('./file');
 const recordUtils = require('./record');
 const vaultEvents = require('../events');
 const backup = require('./backup');
+const mongo = require('./mongo');
 
-function addRecord({ name, value }) {
+let db;
+
+// Initialize MongoDB connection
+async function initDB() {
+  db = await mongo.connectDB();
+}
+
+async function addRecord({ name, value }) {
   recordUtils.validateRecord({ name, value });
-  const data = fileDB.readDB();
   const newRecord = { id: recordUtils.generateId(), name, value };
-  data.push(newRecord);
-  fileDB.writeDB(data);
+
+  await db.collection('records').insertOne(newRecord);
   vaultEvents.emit('recordAdded', newRecord);
 
   // Create automatic backup
-  const backupResult = backup.createBackup(data);
+  const allRecords = await listRecords();
+  const backupResult = backup.createBackup(allRecords);
   if (backupResult.success) {
     console.log(`💾 Backup created: ${backupResult.filename}`);
   }
@@ -20,31 +27,34 @@ function addRecord({ name, value }) {
   return newRecord;
 }
 
-function listRecords() {
-  return fileDB.readDB();
+async function listRecords() {
+  const records = await db.collection('records').find({}).toArray();
+  return records;
 }
 
-function updateRecord(id, newName, newValue) {
-  const data = fileDB.readDB();
-  const record = data.find(r => r.id === id);
-  if (!record) return null;
-  record.name = newName;
-  record.value = newValue;
-  fileDB.writeDB(data);
-  vaultEvents.emit('recordUpdated', record);
-  return record;
+async function updateRecord(id, newName, newValue) {
+  const result = await db.collection('records').findOneAndUpdate(
+    { id: id },
+    { $set: { name: newName, value: newValue } },
+    { returnDocument: 'after' }
+  );
+
+  if (!result) return null;
+
+  vaultEvents.emit('recordUpdated', result);
+  return result;
 }
 
-function deleteRecord(id) {
-  let data = fileDB.readDB();
-  const record = data.find(r => r.id === id);
+async function deleteRecord(id) {
+  const record = await db.collection('records').findOne({ id: id });
   if (!record) return null;
-  data = data.filter(r => r.id !== id);
-  fileDB.writeDB(data);
+
+  await db.collection('records').deleteOne({ id: id });
   vaultEvents.emit('recordDeleted', record);
 
   // Create automatic backup
-  const backupResult = backup.createBackup(data);
+  const allRecords = await listRecords();
+  const backupResult = backup.createBackup(allRecords);
   if (backupResult.success) {
     console.log(`💾 Backup created: ${backupResult.filename}`);
   }
@@ -52,13 +62,18 @@ function deleteRecord(id) {
   return record;
 }
 
-function searchRecords(query) {
-  const data = fileDB.readDB();
+async function searchRecords(query) {
   const lowerQuery = query.toLowerCase();
-  return data.filter(r =>
-    r.name.toLowerCase().includes(lowerQuery) ||
-    r.id.toString() === query
-  );
+
+  // Search by name (case-insensitive) or exact ID match
+  const records = await db.collection('records').find({
+    $or: [
+      { name: { $regex: query, $options: 'i' } },
+      { id: parseInt(query) || 0 }
+    ]
+  }).toArray();
+
+  return records;
 }
 
-module.exports = { addRecord, listRecords, updateRecord, deleteRecord, searchRecords };
+module.exports = { initDB, addRecord, listRecords, updateRecord, deleteRecord, searchRecords };
