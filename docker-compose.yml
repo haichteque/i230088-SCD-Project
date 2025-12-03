@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Service 1: The Database
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    volumes:
+      - mongo-data:/data/db        # Requirement: Persistent Volume
+    networks:
+      - scd-network                # Requirement: Custom Bridge Network
+
+  # Service 2: The Backend Application
+  backend:
+    build: . #Builds here
+    container_name: backend
+    restart: always
+    ports:
+      - "${PORT}:${PORT}"          # Requirement: Ports (using .env)
+    environment:
+      - MONGO_URI=mongodb://mongo:27017  # Connect to mongo service
+      - DB_NAME=${DB_NAME}
+    depends_on:
+      - mongo                      # Ensures Mongo starts first
+    networks:
+      - scd-network                # Connects to the same network
+    
+    stdin_open: true
+    tty: true
+
+# Define the custom network
+networks:
+  scd-network:
+    driver: bridge
+
+# Define the persistent volume
+volumes:
+  mongo-data:
+    external: true                 # We reuse the volume created in Part 5
