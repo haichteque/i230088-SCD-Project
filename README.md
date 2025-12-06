@@ -179,10 +179,10 @@ If you experience container crashes, it's typically because:
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017` (local)<br>`mongodb://mongo:27017` (Docker) |
-| `DB_NAME` | Name of the MongoDB database | `nodevault` |
+| Variable    | Description                  | Default                                                                 |
+| ----------- | ---------------------------- | ----------------------------------------------------------------------- |
+| `MONGO_URI` | MongoDB connection string    | `mongodb://localhost:27017` (local)<br>`mongodb://mongo:27017` (Docker) |
+| `DB_NAME`   | Name of the MongoDB database | `nodevault`                                                             |
 
 ## Backup System
 
