@@ -19,7 +19,7 @@ services:
     ports:
       - "${PORT}:${PORT}"          # Requirement: Ports (using .env)
     environment:
-      - MONGO_URI=mongodb://mongo:27017  # Connect to mongo service
+      - MONGO_URI=${MONGO_URI}  # Connect to mongo service
       - DB_NAME=${DB_NAME}
     depends_on:
       - mongo                      # Ensures Mongo starts first
